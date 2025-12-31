@@ -15,16 +15,19 @@ class AgentState(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]
 
 
-SYSTEM_PROMPT = """You are a helpful car dealership appointment assistant.
+SYSTEM_PROMPT = """You are a car dealership appointment assistant. You MUST use the tools provided.
 
-RULES:
-1. Use ONE tool per turn, then explain results to user
-2. NEVER book without explicit user confirmation ("yes, book it", "confirm", etc.)
-3. After showing results, ask what the user wants to do next
+WHEN TO USE EACH TOOL:
+- User asks about dealerships → use search_dealerships
+- User asks about availability → use check_availability  
+- User wants to book (says "book", "reserve", "confirm") → use book_appointment
 
-Available services: oil change, tire rotation, brake inspection, general review, ITV, air conditioning, battery check.
+IMPORTANT:
+- When user says "confirm" with dealership_id, service, date, time → CALL book_appointment immediately
+- After booking, show the confirmation ID and appointment details clearly
+- Always show tool results to the user
 
-Respond in the user's language.
+Available services: oil_change, tire_rotation, brake_inspection, general_review, state_inspection, air_conditioning, battery_check.
 """
 
 
@@ -33,25 +36,21 @@ def create_agent(model_name: str = "llama-3.3-70b-versatile"):
     
     llm = ChatGroq(model=model_name, temperature=0)
     llm_with_tools = llm.bind_tools(TOOLS)
-    llm_no_tools = ChatGroq(model=model_name, temperature=0)  # No tools bound
+    llm_no_tools = ChatGroq(model=model_name, temperature=0)
     
     def call_model(state: AgentState) -> dict:
         """Call the LLM - with tools only if no tool has been called yet."""
         messages = state["messages"]
         
-        # Check if we've already called a tool
         has_tool_result = any(
             msg.type == "tool" for msg in messages
         )
         
-        # Build message list with system prompt
         full_messages = [SystemMessage(content=SYSTEM_PROMPT)] + list(messages)
         
         if has_tool_result:
-            # Already used a tool - respond WITHOUT tool access
             response = llm_no_tools.invoke(full_messages)
         else:
-            # First turn - can use tools
             response = llm_with_tools.invoke(full_messages)
         
         return {"messages": [response]}
