@@ -64,7 +64,7 @@ def search_dealerships(
 
     output_lines = [f"Found {len(results)} dealership(s):\n"]
     for dealer in results:
-        output_lines.append(f"- {dealer.name} ({dealer.location})")
+        output_lines.append(f"- **{dealer.name}** ({dealer.location})")
         output_lines.append(f"  Address: {dealer.address}")
         output_lines.append(f"  Phone: {dealer.phone}")
         output_lines.append(f"  Services: {', '.join(dealer.services)}")
@@ -166,8 +166,8 @@ def compare_availability(location: Optional[str] = None, service: Optional[str] 
 
     output_lines = ["Soonest availability by dealership:\n"]
     for i, r in enumerate(results):
-        marker = " (SOONEST)" if i == 0 else ""
-        output_lines.append(f"- {r['dealer'].name} ({r['dealer'].location}){marker}")
+        marker = " ✓ SOONEST" if i == 0 else ""
+        output_lines.append(f"- **{r['dealer'].name}** ({r['dealer'].location}){marker}")
         output_lines.append(f"  First available: {r['date']} at {r['time']}")
         output_lines.append(f"  Address: {r['dealer'].address}")
         output_lines.append(f"  Phone: {r['dealer'].phone}")
@@ -220,9 +220,9 @@ def book_next_available(
         return f"Sorry, could not book the appointment at {dealer.name}."
 
     return (
-        f"Appointment confirmed!\n"
+        f"✓ Appointment confirmed!\n"
         f"  Confirmation ID: {appointment.id}\n"
-        f"  Dealership: {dealer.name}\n"
+        f"  Dealership: **{dealer.name}**\n"
         f"  Address: {dealer.address}\n"
         f"  Phone: {dealer.phone}\n"
         f"  Service: {appointment.service}\n"
@@ -269,9 +269,9 @@ def book_appointment(
         return f"Sorry, the slot at {time} on {date} is not available at {dealer.name}."
 
     return (
-        f"Appointment confirmed!\n"
+        f"✓ Appointment confirmed!\n"
         f"  Confirmation ID: {appointment.id}\n"
-        f"  Dealership: {dealer.name}\n"
+        f"  Dealership: **{dealer.name}**\n"
         f"  Address: {dealer.address}\n"
         f"  Phone: {dealer.phone}\n"
         f"  Service: {appointment.service}\n"
@@ -301,7 +301,7 @@ def get_my_bookings() -> str:
         dealer_name = dealer.name if dealer else apt.dealership_id
         dealer_address = dealer.address if dealer else "N/A"
         output_lines.append(f"- Booking {apt.id}")
-        output_lines.append(f"  Dealership: {dealer_name}")
+        output_lines.append(f"  Dealership: **{dealer_name}**")
         output_lines.append(f"  Address: {dealer_address}")
         output_lines.append(f"  Service: {apt.service}")
         output_lines.append(f"  Date: {apt.date}")

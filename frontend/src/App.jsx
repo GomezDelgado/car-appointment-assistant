@@ -29,6 +29,17 @@ function getStoredHistory() {
   }
 }
 
+function renderText(text) {
+  // Simple markdown bold parser: **text** -> <strong>text</strong>
+  const parts = text.split(/(\*\*[^*]+\*\*)/g)
+  return parts.map((part, i) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return <strong key={i}>{part.slice(2, -2)}</strong>
+    }
+    return part
+  })
+}
+
 function saveToHistory(message) {
   const history = getStoredHistory()
   // Avoid duplicates
@@ -144,7 +155,7 @@ function App() {
             <div key={idx} className={`message ${msg.role} ${msg.error ? 'error' : ''}`}>
               <div className="message-content">
                 {msg.content.split('\n').map((line, i) => (
-                  <p key={i}>{line}</p>
+                  <p key={i}>{renderText(line)}</p>
                 ))}
               </div>
             </div>
