@@ -3,12 +3,22 @@ import './App.css'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/graphql'
 const STORAGE_KEY = 'car-assistant-history'
+const SESSION_KEY = 'car-assistant-session'
 const MAX_HISTORY = 4
 
 const DEFAULT_ACTIONS = [
   { label: 'Dealerships in Manhattan', message: 'Show me dealerships in Manhattan' },
   { label: 'Dealerships in Brooklyn', message: 'Show me dealerships in Brooklyn' },
 ]
+
+function getSessionId() {
+  let sessionId = sessionStorage.getItem(SESSION_KEY)
+  if (!sessionId) {
+    sessionId = 'session_' + Math.random().toString(36).substring(2, 15)
+    sessionStorage.setItem(SESSION_KEY, sessionId)
+  }
+  return sessionId
+}
 
 function getStoredHistory() {
   try {
@@ -66,11 +76,12 @@ function App() {
     setLoading(true)
 
     try {
+      const sessionId = getSessionId()
       const response = await fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          query: `mutation { chat(message: "${userMessage.replace(/"/g, '\\"')}") { message success } }`
+          query: `mutation { chat(message: "${userMessage.replace(/"/g, '\\"')}", sessionId: "${sessionId}") { message success } }`
         })
       })
 
