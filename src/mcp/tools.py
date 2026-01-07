@@ -36,7 +36,7 @@ def get_dealership_info(dealership_name: str) -> str:
 
     return (
         f"{dealer.name}\n"
-        f"  Location: {dealer.location}\n"
+        f"  Address: {dealer.address}\n"
         f"  Phone: {dealer.phone}\n"
         f"  Services: {', '.join(dealer.services)}\n"
     )
@@ -65,7 +65,7 @@ def search_dealerships(
     output_lines = [f"Found {len(results)} dealership(s):\n"]
     for dealer in results:
         output_lines.append(f"- {dealer.name}")
-        output_lines.append(f"  Location: {dealer.location}")
+        output_lines.append(f"  Address: {dealer.address}")
         output_lines.append(f"  Phone: {dealer.phone}")
         output_lines.append(f"  Services: {', '.join(dealer.services)}")
         output_lines.append("")
@@ -83,7 +83,7 @@ def check_availability(
 
     Args:
         dealership_name: The name of the dealership (e.g., "Downtown Auto Service")
-        date: Optional specific date to check (format: YYYY-MM-DD)
+        date: Optional specific date to check (format: YYYY-MM-DD). Pass None or omit for all dates.
 
     Returns:
         A formatted string with available time slots.
@@ -92,10 +92,12 @@ def check_availability(
     if not dealer:
         return f"Dealership '{dealership_name}' not found."
 
-    slots = _get_availability(dealership_id=dealer.id, date=date)
-    
+    # Handle null/None date properly
+    actual_date = date if date and date != "null" else None
+    slots = _get_availability(dealership_id=dealer.id, date=actual_date)
+
     if not slots:
-        return f"No available slots at {dealer.name}" + (f" on {date}" if date else "") + "."
+        return f"No available slots at {dealer.name}" + (f" on {actual_date}" if actual_date else "") + "."
     
     output_lines = [f"Available slots at {dealer.name}:\n"]
     
@@ -109,6 +111,58 @@ def check_availability(
     for slot_date, times in sorted(slots_by_date.items()):
         output_lines.append(f"  {slot_date}: {', '.join(sorted(times))}")
     
+    return "\n".join(output_lines)
+
+
+@tool
+def compare_availability(location: Optional[str] = None) -> str:
+    """
+    Compare availability across multiple dealerships to find the soonest appointment.
+    Use this when user asks "which dealer has soonest availability" or wants to compare dealers.
+
+    Args:
+        location: Optional location to filter dealerships (e.g., "Manhattan")
+
+    Returns:
+        Comparison of first available slots at each dealership.
+    """
+    from src.data.mock_data import DEALERSHIPS
+
+    dealers = DEALERSHIPS
+    if location:
+        location_lower = location.lower()
+        dealers = [d for d in dealers if location_lower in d.location.lower()]
+
+    if not dealers:
+        return f"No dealerships found in {location}."
+
+    results = []
+    for dealer in dealers:
+        slots = _get_availability(dealership_id=dealer.id)
+        if slots:
+            sorted_slots = sorted(slots, key=lambda s: (s.date, s.time))
+            first = sorted_slots[0]
+            results.append({
+                "dealer": dealer,
+                "date": first.date,
+                "time": first.time,
+            })
+
+    if not results:
+        return "No availability found at any dealership."
+
+    # Sort by earliest availability
+    results.sort(key=lambda r: (r["date"], r["time"]))
+
+    output_lines = ["Soonest availability by dealership:\n"]
+    for i, r in enumerate(results):
+        marker = " (SOONEST)" if i == 0 else ""
+        output_lines.append(f"- {r['dealer'].name}{marker}")
+        output_lines.append(f"  First available: {r['date']} at {r['time']}")
+        output_lines.append(f"  Address: {r['dealer'].address}")
+        output_lines.append(f"  Phone: {r['dealer'].phone}")
+        output_lines.append("")
+
     return "\n".join(output_lines)
 
 
@@ -159,7 +213,7 @@ def book_next_available(
         f"Appointment confirmed!\n"
         f"  Confirmation ID: {appointment.id}\n"
         f"  Dealership: {dealer.name}\n"
-        f"  Location: {dealer.location}\n"
+        f"  Address: {dealer.address}\n"
         f"  Phone: {dealer.phone}\n"
         f"  Service: {appointment.service}\n"
         f"  Date: {appointment.date}\n"
@@ -208,7 +262,7 @@ def book_appointment(
         f"Appointment confirmed!\n"
         f"  Confirmation ID: {appointment.id}\n"
         f"  Dealership: {dealer.name}\n"
-        f"  Location: {dealer.location}\n"
+        f"  Address: {dealer.address}\n"
         f"  Phone: {dealer.phone}\n"
         f"  Service: {appointment.service}\n"
         f"  Date: {appointment.date}\n"
@@ -235,8 +289,10 @@ def get_my_bookings() -> str:
     for apt in bookings:
         dealer = get_dealership_by_id(apt.dealership_id)
         dealer_name = dealer.name if dealer else apt.dealership_id
+        dealer_address = dealer.address if dealer else "N/A"
         output_lines.append(f"- Booking {apt.id}")
         output_lines.append(f"  Dealership: {dealer_name}")
+        output_lines.append(f"  Address: {dealer_address}")
         output_lines.append(f"  Service: {apt.service}")
         output_lines.append(f"  Date: {apt.date}")
         output_lines.append(f"  Time: {apt.time}")
@@ -326,6 +382,7 @@ TOOLS = [
     get_dealership_info,
     search_dealerships,
     check_availability,
+    compare_availability,
     book_next_available,
     book_appointment,
     get_my_bookings,

@@ -1,0 +1,5 @@
+langgraph>=0.2.0
+langchain-groq>=0.2.0
+strawberry-graphql[fastapi]>=0.252.0
+uvicorn>=0.32.0
+python-dotenv>=1.0.0

@@ -20,7 +20,8 @@ SYSTEM_PROMPT = """You are a car dealership appointment assistant. You MUST use 
 WHEN TO USE EACH TOOL:
 - User asks about contact info, phone, address, details of a dealership → use get_dealership_info
 - User asks about dealerships or locations → use search_dealerships
-- User asks about availability WITHOUT wanting to book → use check_availability
+- User asks about availability at ONE dealership → use check_availability
+- User asks "which dealer has soonest" or wants to COMPARE availability → use compare_availability
 - User wants the SOONEST/EARLIEST/NEXT AVAILABLE appointment → use book_next_available
 - User wants to book a SPECIFIC date and time → use book_appointment
 - User asks about their bookings/reservations/appointments → use get_my_bookings

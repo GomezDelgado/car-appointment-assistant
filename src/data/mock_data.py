@@ -10,6 +10,7 @@ class Dealership:
     id: str
     name: str
     location: str
+    address: str
     services: list[str]
     phone: str
 
@@ -38,6 +39,7 @@ DEALERSHIPS: list[Dealership] = [
         id="dealer_001",
         name="Downtown Auto Service",
         location="Manhattan",
+        address="245 Canal Street, New York, NY 10013",
         services=["oil_change", "tire_rotation", "brake_inspection", "general_review"],
         phone="+1 212 555 0101",
     ),
@@ -45,6 +47,7 @@ DEALERSHIPS: list[Dealership] = [
         id="dealer_002",
         name="Brooklyn CarCare",
         location="Brooklyn",
+        address="458 Atlantic Avenue, Brooklyn, NY 11217",
         services=["oil_change", "tire_rotation", "state_inspection", "air_conditioning"],
         phone="+1 718 555 0102",
     ),
@@ -52,6 +55,7 @@ DEALERSHIPS: list[Dealership] = [
         id="dealer_003",
         name="Queens Auto Pro",
         location="Queens",
+        address="89-15 Queens Boulevard, Elmhurst, NY 11373",
         services=["oil_change", "general_review", "brake_inspection", "battery_check"],
         phone="+1 718 555 0103",
     ),
@@ -59,6 +63,7 @@ DEALERSHIPS: list[Dealership] = [
         id="dealer_004",
         name="Bronx Mechanics Plus",
         location="Bronx",
+        address="1520 Webster Avenue, Bronx, NY 10457",
         services=["oil_change", "tire_rotation", "state_inspection", "general_review"],
         phone="+1 718 555 0104",
     ),
@@ -66,6 +71,7 @@ DEALERSHIPS: list[Dealership] = [
         id="dealer_005",
         name="Midtown Motors",
         location="Manhattan",
+        address="630 West 45th Street, New York, NY 10036",
         services=["oil_change", "air_conditioning", "battery_check", "state_inspection"],
         phone="+1 212 555 0105",
     ),
@@ -73,6 +79,7 @@ DEALERSHIPS: list[Dealership] = [
         id="dealer_006",
         name="Bay Ridge Auto Center",
         location="Brooklyn",
+        address="7425 5th Avenue, Brooklyn, NY 11209",
         services=["oil_change", "brake_inspection", "general_review", "battery_check"],
         phone="+1 718 555 0106",
     ),
@@ -80,6 +87,7 @@ DEALERSHIPS: list[Dealership] = [
         id="dealer_007",
         name="Astoria Car Service",
         location="Queens",
+        address="31-12 Steinway Street, Astoria, NY 11103",
         services=["oil_change", "tire_rotation", "air_conditioning", "state_inspection"],
         phone="+1 718 555 0107",
     ),
@@ -87,6 +95,7 @@ DEALERSHIPS: list[Dealership] = [
         id="dealer_008",
         name="Harlem Auto Works",
         location="Manhattan",
+        address="2154 Frederick Douglass Blvd, New York, NY 10026",
         services=["oil_change", "tire_rotation", "brake_inspection", "battery_check"],
         phone="+1 212 555 0108",
     ),
