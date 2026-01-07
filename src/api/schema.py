@@ -5,6 +5,7 @@ from typing import Optional
 from langchain_core.messages import HumanMessage, AIMessage
 
 from src.agent.graph import chat
+from src.context import set_session_id
 from src.data.mock_data import (
     DEALERSHIPS,
     search_dealerships as _search_dealerships,
@@ -94,6 +95,9 @@ class Mutation:
     async def chat(self, message: str, session_id: Optional[str] = "default") -> ChatResponse:
         """Send a message to the appointment assistant and get a response."""
         try:
+            # Set the session ID in context for tools to access
+            set_session_id(session_id)
+
             # Get or create conversation history for this session
             if session_id not in conversation_history:
                 conversation_history[session_id] = []

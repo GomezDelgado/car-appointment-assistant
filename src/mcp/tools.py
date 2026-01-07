@@ -3,6 +3,7 @@
 from typing import Optional
 from langchain_core.tools import tool
 
+from src.context import get_session_id
 from src.data.mock_data import (
     search_dealerships as _search_dealerships,
     get_availability as _get_availability,
@@ -213,6 +214,7 @@ def book_next_available(
         service=service,
         date=first_slot.date,
         time=first_slot.time,
+        session_id=get_session_id(),
         customer_name=customer_name,
     )
 
@@ -262,9 +264,10 @@ def book_appointment(
         service=service,
         date=date,
         time=time,
+        session_id=get_session_id(),
         customer_name=customer_name,
     )
-    
+
     if not appointment:
         return f"Sorry, the slot at {time} on {date} is not available at {dealer.name}."
 
@@ -290,7 +293,7 @@ def get_my_bookings() -> str:
     Returns:
         List of all current bookings with details.
     """
-    bookings = _get_bookings()
+    bookings = _get_bookings(session_id=get_session_id())
 
     if not bookings:
         return "You have no bookings at this time."
@@ -325,14 +328,15 @@ def cancel_my_booking(booking_id: str) -> str:
     Returns:
         Confirmation of cancellation or error message.
     """
-    apt = _get_booking_by_id(booking_id)
+    session_id = get_session_id()
+    apt = _get_booking_by_id(booking_id, session_id)
     if not apt:
         return f"Booking '{booking_id}' not found."
 
     dealer = get_dealership_by_id(apt.dealership_id)
     dealer_name = dealer.name if dealer else apt.dealership_id
 
-    if _cancel_booking(booking_id):
+    if _cancel_booking(booking_id, session_id):
         return (
             f"Booking cancelled successfully!\n"
             f"  Cancelled: {booking_id}\n"
@@ -361,7 +365,8 @@ def modify_my_booking(
     Returns:
         Confirmation of modification or error message.
     """
-    apt = _get_booking_by_id(booking_id)
+    session_id = get_session_id()
+    apt = _get_booking_by_id(booking_id, session_id)
     if not apt:
         return f"Booking '{booking_id}' not found."
 
@@ -371,7 +376,7 @@ def modify_my_booking(
     dealer = get_dealership_by_id(apt.dealership_id)
     dealer_name = dealer.name if dealer else apt.dealership_id
 
-    modified = _modify_booking(booking_id, new_date, new_time)
+    modified = _modify_booking(booking_id, new_date, new_time, session_id)
     if modified:
         return (
             f"Booking modified successfully!\n"

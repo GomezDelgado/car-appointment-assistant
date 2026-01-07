@@ -30,6 +30,7 @@ class Appointment:
     service: str
     date: str
     time: str
+    session_id: str = "default"
     customer_name: Optional[str] = None
 
 
@@ -190,18 +191,19 @@ def book_appointment(
     service: str,
     date: str,
     time: str,
+    session_id: str = "default",
     customer_name: Optional[str] = None,
 ) -> Optional[Appointment]:
     """Book an appointment at a dealership."""
     # Check if slot is available
     for slot in AVAILABILITY:
-        if (slot.dealership_id == dealership_id and 
-            slot.date == date and 
-            slot.time == time and 
+        if (slot.dealership_id == dealership_id and
+            slot.date == date and
+            slot.time == time and
             slot.available):
             # Mark slot as taken
             slot.available = False
-            
+
             # Create appointment
             appointment = Appointment(
                 id=f"apt_{len(APPOINTMENTS) + 1:04d}",
@@ -209,11 +211,12 @@ def book_appointment(
                 service=normalize_service(service) or service,
                 date=date,
                 time=time,
+                session_id=session_id,
                 customer_name=customer_name,
             )
             APPOINTMENTS.append(appointment)
             return appointment
-    
+
     return None
 
 
@@ -244,23 +247,23 @@ def resolve_dealership(identifier: str) -> Optional[Dealership]:
     return get_dealership_by_name(identifier)
 
 
-def get_bookings() -> list[Appointment]:
-    """Get all booked appointments."""
-    return APPOINTMENTS.copy()
+def get_bookings(session_id: str = "default") -> list[Appointment]:
+    """Get all booked appointments for a session."""
+    return [apt for apt in APPOINTMENTS if apt.session_id == session_id]
 
 
-def get_booking_by_id(booking_id: str) -> Optional[Appointment]:
-    """Get a specific booking by ID."""
+def get_booking_by_id(booking_id: str, session_id: str = "default") -> Optional[Appointment]:
+    """Get a specific booking by ID (only if it belongs to the session)."""
     for apt in APPOINTMENTS:
-        if apt.id == booking_id:
+        if apt.id == booking_id and apt.session_id == session_id:
             return apt
     return None
 
 
-def cancel_booking(booking_id: str) -> bool:
-    """Cancel a booking and free up the time slot."""
+def cancel_booking(booking_id: str, session_id: str = "default") -> bool:
+    """Cancel a booking and free up the time slot (only if it belongs to the session)."""
     for i, apt in enumerate(APPOINTMENTS):
-        if apt.id == booking_id:
+        if apt.id == booking_id and apt.session_id == session_id:
             # Free up the time slot
             for slot in AVAILABILITY:
                 if (slot.dealership_id == apt.dealership_id and
@@ -278,9 +281,10 @@ def modify_booking(
     booking_id: str,
     new_date: Optional[str] = None,
     new_time: Optional[str] = None,
+    session_id: str = "default",
 ) -> Optional[Appointment]:
-    """Modify a booking's date and/or time."""
-    apt = get_booking_by_id(booking_id)
+    """Modify a booking's date and/or time (only if it belongs to the session)."""
+    apt = get_booking_by_id(booking_id, session_id)
     if not apt:
         return None
 
