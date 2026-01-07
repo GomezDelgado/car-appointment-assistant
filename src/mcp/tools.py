@@ -115,26 +115,36 @@ def check_availability(
 
 
 @tool
-def compare_availability(location: Optional[str] = None) -> str:
+def compare_availability(location: Optional[str] = None, service: Optional[str] = None) -> str:
     """
     Compare availability across multiple dealerships to find the soonest appointment.
     Use this when user asks "which dealer has soonest availability" or wants to compare dealers.
 
     Args:
         location: Optional location to filter dealerships (e.g., "Manhattan")
+        service: Optional service to filter dealerships (e.g., "brake_inspection", "oil_change")
 
     Returns:
         Comparison of first available slots at each dealership.
     """
-    from src.data.mock_data import DEALERSHIPS
+    from src.data.mock_data import DEALERSHIPS, normalize_service
 
     dealers = DEALERSHIPS
     if location:
         location_lower = location.lower()
         dealers = [d for d in dealers if location_lower in d.location.lower()]
 
+    if service:
+        normalized = normalize_service(service) or service
+        dealers = [d for d in dealers if normalized in d.services]
+
     if not dealers:
-        return f"No dealerships found in {location}."
+        filters = []
+        if location:
+            filters.append(f"in {location}")
+        if service:
+            filters.append(f"offering {service}")
+        return f"No dealerships found {' '.join(filters)}." if filters else "No dealerships found."
 
     results = []
     for dealer in dealers:
