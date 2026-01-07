@@ -98,9 +98,9 @@ def check_availability(
     slots = _get_availability(dealership_id=dealer.id, date=actual_date)
 
     if not slots:
-        return f"No available slots at {dealer.name}" + (f" on {actual_date}" if actual_date else "") + "."
-    
-    output_lines = [f"Available slots at {dealer.name}:\n"]
+        return f"No available slots at **{dealer.name}**" + (f" on {actual_date}" if actual_date else "") + "."
+
+    output_lines = [f"Available slots at **{dealer.name}**:\n"]
     
     # Group by date
     slots_by_date: dict[str, list[str]] = {}
