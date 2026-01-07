@@ -11,3 +11,6 @@ wheels/
 
 # Environment variables
 .env
+
+# IDE/Editor settings
+.claude/
