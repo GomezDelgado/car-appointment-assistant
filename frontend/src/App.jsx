@@ -123,7 +123,7 @@ function App() {
   }
 
   const handleQuickAction = (message) => {
-    sendMessage(message)
+    setInput(message)
   }
 
   return (
