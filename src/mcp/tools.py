@@ -64,7 +64,7 @@ def search_dealerships(
 
     output_lines = [f"Found {len(results)} dealership(s):\n"]
     for dealer in results:
-        output_lines.append(f"- {dealer.name}")
+        output_lines.append(f"- {dealer.name} ({dealer.location})")
         output_lines.append(f"  Address: {dealer.address}")
         output_lines.append(f"  Phone: {dealer.phone}")
         output_lines.append(f"  Services: {', '.join(dealer.services)}")
@@ -157,7 +157,7 @@ def compare_availability(location: Optional[str] = None) -> str:
     output_lines = ["Soonest availability by dealership:\n"]
     for i, r in enumerate(results):
         marker = " (SOONEST)" if i == 0 else ""
-        output_lines.append(f"- {r['dealer'].name}{marker}")
+        output_lines.append(f"- {r['dealer'].name} ({r['dealer'].location}){marker}")
         output_lines.append(f"  First available: {r['date']} at {r['time']}")
         output_lines.append(f"  Address: {r['dealer'].address}")
         output_lines.append(f"  Phone: {r['dealer'].phone}")
