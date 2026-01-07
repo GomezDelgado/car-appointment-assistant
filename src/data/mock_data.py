@@ -62,6 +62,34 @@ DEALERSHIPS: list[Dealership] = [
         services=["oil_change", "tire_rotation", "state_inspection", "general_review"],
         phone="+1 718 555 0104",
     ),
+    Dealership(
+        id="dealer_005",
+        name="Midtown Motors",
+        location="Manhattan",
+        services=["oil_change", "air_conditioning", "battery_check", "state_inspection"],
+        phone="+1 212 555 0105",
+    ),
+    Dealership(
+        id="dealer_006",
+        name="Bay Ridge Auto Center",
+        location="Brooklyn",
+        services=["oil_change", "brake_inspection", "general_review", "battery_check"],
+        phone="+1 718 555 0106",
+    ),
+    Dealership(
+        id="dealer_007",
+        name="Astoria Car Service",
+        location="Queens",
+        services=["oil_change", "tire_rotation", "air_conditioning", "state_inspection"],
+        phone="+1 718 555 0107",
+    ),
+    Dealership(
+        id="dealer_008",
+        name="Harlem Auto Works",
+        location="Manhattan",
+        services=["oil_change", "tire_rotation", "brake_inspection", "battery_check"],
+        phone="+1 212 555 0108",
+    ),
 ]
 
 # Service name mappings (for natural language understanding)
@@ -77,14 +105,14 @@ SERVICE_MAPPINGS: dict[str, list[str]] = {
 
 
 def _generate_availability() -> list[TimeSlot]:
-    """Generate mock availability for the next 7 days."""
+    """Generate mock availability for the next 14 days."""
     slots = []
     base_date = datetime.now()
-    
+
     time_options = ["09:00", "10:00", "11:00", "12:00", "14:00", "15:00", "16:00"]
-    
+
     for dealer in DEALERSHIPS:
-        for day_offset in range(1, 8):  # Next 7 days
+        for day_offset in range(1, 15):  # Next 14 days
             date = (base_date + timedelta(days=day_offset)).strftime("%Y-%m-%d")
             for time in time_options:
                 # Simulate some slots being taken (roughly 30% unavailable)
@@ -186,3 +214,94 @@ def get_dealership_by_id(dealership_id: str) -> Optional[Dealership]:
         if dealer.id == dealership_id:
             return dealer
     return None
+
+
+def get_dealership_by_name(name: str) -> Optional[Dealership]:
+    """Get a dealership by its name (case-insensitive, partial match)."""
+    name_lower = name.lower()
+    for dealer in DEALERSHIPS:
+        if name_lower in dealer.name.lower():
+            return dealer
+    return None
+
+
+def resolve_dealership(identifier: str) -> Optional[Dealership]:
+    """Resolve a dealership by ID or name."""
+    # First try by ID
+    dealer = get_dealership_by_id(identifier)
+    if dealer:
+        return dealer
+    # Then try by name
+    return get_dealership_by_name(identifier)
+
+
+def get_bookings() -> list[Appointment]:
+    """Get all booked appointments."""
+    return APPOINTMENTS.copy()
+
+
+def get_booking_by_id(booking_id: str) -> Optional[Appointment]:
+    """Get a specific booking by ID."""
+    for apt in APPOINTMENTS:
+        if apt.id == booking_id:
+            return apt
+    return None
+
+
+def cancel_booking(booking_id: str) -> bool:
+    """Cancel a booking and free up the time slot."""
+    for i, apt in enumerate(APPOINTMENTS):
+        if apt.id == booking_id:
+            # Free up the time slot
+            for slot in AVAILABILITY:
+                if (slot.dealership_id == apt.dealership_id and
+                    slot.date == apt.date and
+                    slot.time == apt.time):
+                    slot.available = True
+                    break
+            # Remove the appointment
+            APPOINTMENTS.pop(i)
+            return True
+    return False
+
+
+def modify_booking(
+    booking_id: str,
+    new_date: Optional[str] = None,
+    new_time: Optional[str] = None,
+) -> Optional[Appointment]:
+    """Modify a booking's date and/or time."""
+    apt = get_booking_by_id(booking_id)
+    if not apt:
+        return None
+
+    target_date = new_date or apt.date
+    target_time = new_time or apt.time
+
+    # Check if new slot is available
+    new_slot = None
+    for slot in AVAILABILITY:
+        if (slot.dealership_id == apt.dealership_id and
+            slot.date == target_date and
+            slot.time == target_time and
+            slot.available):
+            new_slot = slot
+            break
+
+    if not new_slot:
+        return None
+
+    # Free the old slot
+    for slot in AVAILABILITY:
+        if (slot.dealership_id == apt.dealership_id and
+            slot.date == apt.date and
+            slot.time == apt.time):
+            slot.available = True
+            break
+
+    # Book the new slot
+    new_slot.available = False
+    apt.date = target_date
+    apt.time = target_time
+
+    return apt

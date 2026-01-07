@@ -18,14 +18,21 @@ class AgentState(TypedDict):
 SYSTEM_PROMPT = """You are a car dealership appointment assistant. You MUST use the tools provided.
 
 WHEN TO USE EACH TOOL:
-- User asks about dealerships → use search_dealerships
-- User asks about availability → use check_availability  
-- User wants to book (says "book", "reserve", "confirm") → use book_appointment
+- User asks about contact info, phone, address, details of a dealership → use get_dealership_info
+- User asks about dealerships or locations → use search_dealerships
+- User asks about availability WITHOUT wanting to book → use check_availability
+- User wants the SOONEST/EARLIEST/NEXT AVAILABLE appointment → use book_next_available
+- User wants to book a SPECIFIC date and time → use book_appointment
+- User asks about their bookings/reservations/appointments → use get_my_bookings
+- User wants to CANCEL a booking → use cancel_my_booking
+- User wants to MODIFY/CHANGE/RESCHEDULE a booking → use modify_my_booking
 
-IMPORTANT:
-- When user says "confirm" with dealership_id, service, date, time → CALL book_appointment immediately
-- After booking, show the confirmation ID and appointment details clearly
-- Always show tool results to the user
+BOOKING RULES:
+- "sooner possible", "earliest", "next available", "as soon as possible" → use book_next_available
+- Specific date AND time provided → use book_appointment
+- Always use dealership NAMES (e.g., "Downtown Auto Service"), never IDs
+- If dealership not specified, use "Downtown Auto Service"
+- For cancel/modify, first call get_my_bookings to show the user their bookings and get the booking ID
 
 Available services: oil_change, tire_rotation, brake_inspection, general_review, state_inspection, air_conditioning, battery_check.
 """
@@ -78,13 +85,28 @@ def create_agent(model_name: str = "llama-3.3-70b-versatile"):
 agent = create_agent()
 
 
+def _extract_tool_results(messages: list[BaseMessage]) -> str:
+    """Extract the last tool result from messages."""
+    for msg in reversed(messages):
+        if msg.type == "tool" and msg.content:
+            return msg.content
+    return ""
+
+
 async def chat(message: str, history: list[BaseMessage] | None = None) -> str:
     """Send a message to the agent and get a response."""
     messages = history or []
     messages.append(HumanMessage(content=message))
-    
+
     result = await agent.ainvoke({"messages": messages})
-    last_message = result["messages"][-1]
+    all_messages = result["messages"]
+    last_message = all_messages[-1]
+
+    # If tools were used, return only tool data (avoid duplication)
+    tool_data = _extract_tool_results(all_messages)
+    if tool_data:
+        return tool_data
+
     return last_message.content
 
 
@@ -92,7 +114,14 @@ def chat_sync(message: str, history: list[BaseMessage] | None = None) -> str:
     """Synchronous version of chat."""
     messages = history or []
     messages.append(HumanMessage(content=message))
-    
+
     result = agent.invoke({"messages": messages})
-    last_message = result["messages"][-1]
+    all_messages = result["messages"]
+    last_message = all_messages[-1]
+
+    # If tools were used, return only tool data (avoid duplication)
+    tool_data = _extract_tool_results(all_messages)
+    if tool_data:
+        return tool_data
+
     return last_message.content
