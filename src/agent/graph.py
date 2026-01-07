@@ -39,7 +39,7 @@ Available services: oil_change, tire_rotation, brake_inspection, general_review,
 """
 
 
-def create_agent(model_name: str = "llama-3.1-70b-versatile"):
+def create_agent(model_name: str = "llama3-groq-70b-8192-tool-use-preview"):
     """Create and return the appointment assistant agent graph."""
     
     llm = ChatGroq(model=model_name, temperature=0)
