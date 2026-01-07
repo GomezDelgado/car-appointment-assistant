@@ -181,7 +181,6 @@ def compare_availability(location: Optional[str] = None, service: Optional[str] 
 def book_next_available(
     dealership_name: str,
     service: Optional[str] = None,
-    customer_name: Optional[str] = None,
 ) -> str:
     """
     Book the next available appointment slot at a dealership.
@@ -190,7 +189,6 @@ def book_next_available(
     Args:
         dealership_name: The name of the dealership (e.g., "Downtown Auto Service")
         service: The service to book (default: "oil_change")
-        customer_name: Optional name of the customer
 
     Returns:
         Confirmation message with appointment details or error message.
@@ -215,7 +213,6 @@ def book_next_available(
         date=first_slot.date,
         time=first_slot.time,
         session_id=get_session_id(),
-        customer_name=customer_name,
     )
 
     if not appointment:
@@ -230,7 +227,6 @@ def book_next_available(
         f"  Service: {appointment.service}\n"
         f"  Date: {appointment.date}\n"
         f"  Time: {appointment.time}\n"
-        + (f"  Customer: {appointment.customer_name}\n" if appointment.customer_name else "")
     )
 
 
@@ -240,7 +236,6 @@ def book_appointment(
     service: str,
     date: str,
     time: str,
-    customer_name: Optional[str] = None,
 ) -> str:
     """
     Book an appointment at a dealership.
@@ -250,7 +245,6 @@ def book_appointment(
         service: The service to book (e.g., "oil_change", "brake_inspection")
         date: The date for the appointment (format: YYYY-MM-DD)
         time: The time for the appointment (format: HH:MM)
-        customer_name: Optional name of the customer
 
     Returns:
         Confirmation message with appointment details or error message.
@@ -265,7 +259,6 @@ def book_appointment(
         date=date,
         time=time,
         session_id=get_session_id(),
-        customer_name=customer_name,
     )
 
     if not appointment:
@@ -280,7 +273,6 @@ def book_appointment(
         f"  Service: {appointment.service}\n"
         f"  Date: {appointment.date}\n"
         f"  Time: {appointment.time}\n"
-        + (f"  Customer: {appointment.customer_name}\n" if appointment.customer_name else "")
     )
 
 
@@ -309,8 +301,6 @@ def get_my_bookings() -> str:
         output_lines.append(f"  Service: {apt.service}")
         output_lines.append(f"  Date: {apt.date}")
         output_lines.append(f"  Time: {apt.time}")
-        if apt.customer_name:
-            output_lines.append(f"  Customer: {apt.customer_name}")
         output_lines.append("")
 
     return "\n".join(output_lines)
